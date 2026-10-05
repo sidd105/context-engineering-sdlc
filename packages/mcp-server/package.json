@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "MCP server that serves organizational context to any MCP-capable AI agent.",
   "type": "module",
-  "license": "MIT",
   "bin": {
     "ctx-mcp": "./bin/ctx-mcp.js"
   },

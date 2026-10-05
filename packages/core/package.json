@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "The context engine: knowledge schema, loader, compiler and renderers.",
   "type": "module",
-  "license": "MIT",
   "exports": {
     ".": {
       "source": "./src/index.ts",

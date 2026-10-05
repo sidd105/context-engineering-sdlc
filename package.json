@@ -4,7 +4,6 @@
   "private": true,
   "description": "A context engine for software teams: describe organizational knowledge in a standard YAML format, compile task-specific context, and serve it to people and AI agents.",
   "type": "module",
-  "license": "MIT",
   "engines": {
     "node": ">=20"
   },

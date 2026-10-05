@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "The ctx command: build, explain and validate organizational context from the terminal.",
   "type": "module",
-  "license": "MIT",
   "bin": {
     "ctx": "./bin/ctx.js"
   },
