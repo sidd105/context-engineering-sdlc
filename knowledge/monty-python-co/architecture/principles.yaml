@@ -1,0 +1,109 @@
+defaults:
+  layer: architecture
+  owner: architecture-guild
+
+units:
+  - id: arch.principle.service-boundaries
+    kind: boundary
+    level: must
+    title: Services own their data
+    body: |
+      A service's database is private. Other services interact only via its API
+      or the events it publishes. payment-service owns payment state;
+      ledger-service owns balances; provider-gateway owns provider credentials
+      and network egress to providers.
+    tags: [boundary, service, database, ownership, provider-gateway]
+
+  - id: arch.principle.provider-egress
+    kind: boundary
+    level: must
+    title: All provider traffic goes through provider-gateway
+    body: |
+      Only provider-gateway may call external payment providers. It holds
+      provider credentials, mTLS certificates, and the egress allow-list.
+      payment-service calls provider-gateway over gRPC with a provider id;
+      adapters for each provider live in provider-gateway.
+    tags: [payment-provider, integration, egress, gateway, provider-gateway, network]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [arch.principle.service-boundaries]
+      refines: [baseline.sec.least-privilege]
+
+  - id: arch.pattern.ports-and-adapters
+    kind: pattern
+    level: should
+    title: Hexagonal architecture (ports and adapters)
+    body: |
+      Domain code depends on ports (interfaces); infrastructure implements them
+      as adapters. Domain packages must not import HTTP clients, SDKs or ORMs.
+    tags: [hexagonal, port, adapter, integration, architecture]
+
+  - id: arch.pattern.resilient-integration
+    kind: pattern
+    level: must
+    title: Resilient external integrations
+    body: |
+      Calls to external systems use: explicit timeouts (p99 budget, default 3s
+      for authorize), bounded retries with jitter only for idempotent operations,
+      a circuit breaker per provider, and a bulkhead so one slow provider cannot
+      exhaust shared threads.
+    tags: [integration, timeout, retry, circuit-breaker, resilience, payment-provider]
+    relations:
+      dependsOn: [dom.payments.idempotency]
+
+  - id: arch.adr.012-grpc-internal
+    kind: decision
+    level: must
+    title: "ADR-012: gRPC for synchronous internal calls"
+    body: |
+      Synchronous service-to-service calls use gRPC with protobuf contracts in
+      monty-python-co/contracts. REST is reserved for public APIs.
+    tags: [grpc, protobuf, api, contracts, integration]
+    source: https://wiki.monty-python-co.example/adr/012
+    reviewed: 2023-06-01
+
+  - id: arch.adr.019-kafka-events
+    kind: decision
+    level: must
+    title: "ADR-019: Domain events on Kafka with schema registry"
+    body: |
+      Domain events are published to Kafka via the transactional outbox
+      pattern. Schemas are Avro, registered in the schema registry, and evolve
+      backward-compatibly.
+    tags: [kafka, events, outbox, avro, schema]
+    source: https://wiki.monty-python-co.example/adr/019
+
+  - id: arch.adr.023-no-new-sync-ledger-calls
+    kind: decision
+    level: must
+    title: "ADR-023: No new synchronous calls into ledger-service"
+    body: |
+      To protect the ledger's availability, new integrations consume ledger
+      events or post via the outbox; no new synchronous calls into
+      ledger-service.
+    tags: [ledger, coupling, async, events]
+    relations:
+      refines: [arch.adr.019-kafka-events]
+
+  - id: arch.quality.latency
+    kind: quality-attribute
+    level: should
+    title: Checkout authorization latency budget
+    body: |
+      End-to-end authorization p99 must stay under 1.5s, of which provider time
+      is budgeted at 1.0s. New hops on the authorization path need an
+      architecture review.
+    tags: [latency, performance, authorization, budget]
+    scope: { domains: [payments, checkout] }
+
+  - id: arch.security.secrets-architecture
+    kind: security
+    level: must
+    title: Secrets are issued by Vault with short-lived leases
+    body: |
+      Services fetch secrets from HashiCorp Vault using their Kubernetes service
+      account. Provider API keys live under `secret/payments/providers/<id>`,
+      readable only by provider-gateway.
+    tags: [secrets, vault, credentials, api-key, security, payment-provider]
+    relations:
+      refines: [baseline.sec.no-secrets-in-code]

@@ -1,0 +1,24 @@
+defaults:
+  layer: domain
+  owner: ledger
+  scope: { domains: [ledger] }
+
+units:
+  - id: dom.ledger.double-entry
+    kind: domain-rule
+    level: must
+    title: Double-entry, append-only ledger
+    body: |
+      Every financial movement is a journal entry whose debits equal its credits.
+      Entries are append-only; corrections are new reversing entries.
+    tags: [ledger, journal, double-entry, accounting]
+
+  - id: dom.ledger.reconciliation
+    kind: workflow
+    level: must
+    title: Daily provider reconciliation
+    body: |
+      Each provider's settlement report is reconciled daily against captured
+      payments. Unmatched items older than 3 days raise a finance alert.
+    tags: [reconciliation, settlement, payment-provider, report]
+    scope: { domains: [ledger, payments] }   # new providers need a reconciliation mapping

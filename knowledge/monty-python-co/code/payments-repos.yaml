@@ -1,0 +1,47 @@
+defaults:
+  layer: code
+  owner: payments-core
+
+units:
+  - id: code.provider-gateway.adapter-layout
+    kind: convention
+    level: must
+    title: Provider adapter layout in provider-gateway
+    body: |
+      Each provider lives in `adapters/<provider-id>/` with: `Client.kt`
+      (HTTP/SDK calls only), `Mapper.kt` (provider DTO ↔ domain), `Errors.kt`
+      (decline-code mapping table), `Webhooks.kt`, and `README.md` (contacts,
+      sandbox access, quirks). Register the adapter in `ProviderRegistry` and
+      add a `providers/<provider-id>.yaml` config with timeouts and circuit
+      breaker settings. Copy `adapters/_template/` to start.
+    tags: [adapter, payment-provider, provider, layout, structure, integration]
+    scope: { services: [provider-gateway] }
+    relations:
+      dependsOn: [dom.payments.provider-abstraction]
+
+  - id: code.payment-service.layout
+    kind: convention
+    level: should
+    title: payment-service package layout
+    body: |
+      `domain/` (aggregate, events, ports, no framework imports),
+      `application/` (command handlers, idempotency),
+      `infrastructure/` (gRPC client to provider-gateway, Postgres, outbox),
+      `api/` (public REST). New provider ids are added to the `ProviderId`
+      enum and to routing config; no provider-specific code in payment-service.
+    tags: [layout, structure, package, payment-provider]
+    scope: { services: [payment-service] }
+    relations:
+      dependsOn: [arch.pattern.ports-and-adapters]
+
+  - id: code.example.adyen-adapter
+    kind: example
+    level: info
+    title: The Adyen adapter is the reference implementation
+    body: |
+      `provider-gateway/adapters/adyen/` is the most complete adapter (3DS,
+      webhooks, partial refunds). Use it as the reference when adding a provider.
+    tags: [example, adapter, payment-provider, reference]
+    scope: { domains: [payments] }
+    relations:
+      seeAlso: [code.provider-gateway.adapter-layout]

@@ -1,0 +1,6 @@
+# A reusable, organization-agnostic pack. Organizations `extends:` it and can
+# override any unit by declaring one with the same id, or replace it with an
+# `overrides` relation.
+organization: secure-sdlc-baseline
+description: Generic secure-delivery practices any organization can start from.
+include: [units.yaml]

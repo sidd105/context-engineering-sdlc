@@ -1,0 +1,53 @@
+# Monty Python and Co., a fictional payments company used to exercise the context engine.
+organization: monty-python-co
+description: Monty Python and Co. processes card and wallet payments for online merchants.
+
+# Shared packs load first; units here with the same id replace theirs.
+extends:
+  - ../packs/secure-sdlc-baseline
+
+include: [business, domain, architecture, code, operations]
+
+# Where things live. A task that names a service inherits its domain, team and repo,
+# so rules scoped to any of those apply automatically.
+topology:
+  environments: [dev, staging, prod]
+  domains:
+    payments:
+      team: payments-core
+      businessUnit: merchant-services
+      services:
+        payment-service:
+          repo: monty-python-co/payment-service
+          aliases: [payment service, payments api, payments service]
+        provider-gateway:
+          repo: monty-python-co/provider-gateway
+          aliases: [gateway, psp gateway]
+    ledger:
+      team: ledger
+      businessUnit: finance-platform
+      services:
+        ledger-service:
+          repo: monty-python-co/ledger
+          aliases: [ledger, ledger service]
+    identity:
+      team: identity
+      businessUnit: platform
+      services:
+        auth-service:
+          repo: monty-python-co/auth
+          aliases: [auth, login, authentication]
+    checkout:
+      team: checkout-experience
+      businessUnit: merchant-services
+      services:
+        checkout-web:
+          repo: monty-python-co/checkout-web
+          aliases: [checkout, checkout page]
+
+# Organization-specific tuning of the built-in activity profiles.
+activities:
+  implementation:
+    layerWeights: { operations: 0.5 }   # we want developers to see ops constraints earlier
+
+staleAfterDays: 365

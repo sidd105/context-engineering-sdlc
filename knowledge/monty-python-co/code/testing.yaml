@@ -1,0 +1,51 @@
+defaults:
+  layer: code
+  kind: testing-rule
+
+units:
+  - id: code.test.provider-contract-tests
+    level: must
+    title: Provider adapters need contract tests against recorded fixtures
+    body: |
+      Every adapter has contract tests replaying recorded provider responses
+      (WireMock fixtures under `src/test/resources/<provider-id>/`) covering:
+      approve, soft decline, hard decline, timeout, malformed response, each
+      webhook type, and partial refund. Mapping of every documented decline code
+      is asserted.
+    tags: [testing, contract-test, adapter, payment-provider, wiremock, fixtures]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [dom.payments.decline-reasons]
+      conflictsWith: [code.test.sandbox-e2e]
+
+  - id: code.test.sandbox-e2e
+    level: should
+    title: End-to-end tests hit the provider sandbox in CI
+    body: |
+      An end-to-end suite calls each provider's sandbox on every merge to main
+      to catch API drift.
+    tags: [testing, e2e, sandbox, payment-provider, ci]
+    scope: { domains: [payments] }
+    owner: qa-guild
+    reviewed: 2023-01-15
+
+  - id: code.test.ci-hermetic
+    level: must
+    title: CI builds are hermetic
+    body: |
+      CI jobs on pull requests have no outbound internet access. Anything that
+      needs a real third party runs in the nightly `external` pipeline instead.
+    tags: [ci, testing, network, hermetic]
+    relations:
+      overrides: [code.test.sandbox-e2e]
+
+  - id: code.test.state-machine-property-tests
+    level: should
+    title: Property-test lifecycle transitions
+    body: |
+      Changes to lifecycle handling include property-based tests asserting no
+      illegal transitions and idempotent replays.
+    tags: [testing, property-test, lifecycle, state-machine, idempotency]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [dom.payments.transaction-lifecycle]

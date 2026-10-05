@@ -1,0 +1,92 @@
+defaults:
+  layer: business
+  owner: merchant-services-product
+
+units:
+  - id: biz.goal.auth-rate
+    kind: goal
+    level: info
+    title: Raise card authorization rate to 94%
+    body: |
+      FY27 goal: increase the share of card payments approved on first attempt
+      from 91% to 94%. Smart routing across multiple payment providers is the
+      main lever.
+    tags: [authorization, approval-rate, routing, payment-provider]
+    scope: { businessUnits: [merchant-services] }
+
+  - id: biz.goal.provider-diversity
+    kind: goal
+    level: info
+    title: No single payment provider above 60% of volume
+    body: |
+      To reduce concentration risk, no single payment provider may carry more than
+      60% of monthly processed volume by end of FY27.
+    tags: [payment-provider, risk, routing, resilience]
+    scope: { businessUnits: [merchant-services] }
+
+  - id: biz.rule.provider-onboarding
+    kind: business-rule
+    level: must
+    title: New payment providers need risk and legal sign-off
+    body: |
+      A payment provider can only process live traffic after (1) a signed
+      contract, (2) risk assessment approval, and (3) a PCI DSS Attestation of
+      Compliance on file. Engineering may integrate in sandbox before sign-off,
+      but production enablement is gated by the provider's feature flag owned
+      by Risk.
+    tags: [payment-provider, onboarding, compliance, pci, contract]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [ops.sec.pci-scope]
+
+  - id: biz.rule.refund-window
+    kind: business-rule
+    level: must
+    title: Refunds allowed up to 180 days after capture
+    summary: Refunds are allowed up to 180 days after capture, never above the captured amount.
+    body: |
+      Merchants may refund a payment up to 180 days after capture. Partial
+      refunds are allowed; the sum of refunds may never exceed the captured
+      amount. After 180 days the merchant must use an out-of-band credit.
+    tags: [refund, capture, merchant]
+    scope: { domains: [payments, ledger] }
+    relations:
+      dependsOn: [dom.payments.transaction-lifecycle]
+
+  - id: biz.rule.supported-currencies
+    kind: business-rule
+    level: must
+    title: Settlement currencies are EUR, GBP and USD
+    body: |
+      Monty Python and Co. settles to merchants only in EUR, GBP and USD. Payments in other
+      currencies are converted at capture using the treasury FX rate.
+    tags: [currency, fx, settlement]
+    scope: { domains: [payments, ledger] }
+
+  - id: biz.policy.customer-communication
+    kind: policy
+    level: must
+    title: Merchant-impacting incidents are communicated within 30 minutes
+    body: |
+      Any incident affecting merchant payment success for more than 5 minutes
+      requires a status page update within 30 minutes, owned by the incident
+      commander.
+    tags: [incident, status-page, communication, merchant]
+    activities: [incident, operations]
+
+  - id: biz.constraint.cost-per-transaction
+    kind: constraint
+    level: should
+    title: Keep blended processing cost under 1.9%
+    body: |
+      Blended provider fees must stay under 1.9% of volume. Routing decisions
+      should consider cost after authorization rate.
+    tags: [cost, fees, routing, payment-provider]
+    scope: { businessUnits: [merchant-services] }
+
+  - id: biz.metric.payment-success
+    kind: metric
+    level: info
+    title: Payment success rate is the north-star metric
+    body: Payment success rate (successful captures / attempted payments) is reported daily per provider and per merchant segment.
+    tags: [metric, success-rate, authorization]

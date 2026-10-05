@@ -1,0 +1,59 @@
+units:
+  - id: baseline.sec.no-secrets-in-code
+    layer: operations
+    kind: security
+    level: must
+    title: No secrets in source control
+    body: |
+      Credentials, API keys, tokens and certificates must never be committed,
+      including in tests, fixtures or example config. Load them at runtime from
+      the approved secret store.
+    tags: [secrets, credentials, api-key, security]
+    reviewed: 2026-03-01
+
+  - id: baseline.sec.least-privilege
+    layer: architecture
+    kind: principle
+    level: should
+    title: Least privilege for service identities
+    body: |
+      Each service runs with its own identity and only the permissions it needs.
+      Shared credentials between services are not allowed.
+    tags: [security, iam, permissions]
+
+  - id: baseline.code.review-required
+    layer: code
+    kind: practice
+    level: must
+    title: Every change is peer reviewed
+    body: All changes to main require at least one approving review from someone other than the author.
+    tags: [review, pull-request]
+    activities: [implementation, review, testing]
+
+  - id: baseline.code.tests-with-change
+    layer: code
+    kind: testing-rule
+    level: should
+    title: Tests ship with the change
+    body: |
+      Behavioural changes include automated tests in the same pull request.
+      Bug fixes include a regression test that fails before the fix.
+    tags: [testing, tests, regression]
+
+  - id: baseline.ops.progressive-delivery
+    layer: operations
+    kind: deployment-rule
+    level: should
+    title: Progressive delivery
+    body: |
+      Production rollouts are progressive (canary or percentage-based) with an
+      automated rollback trigger tied to error rate and latency.
+    tags: [deploy, canary, rollout, rollback]
+
+  - id: baseline.ops.structured-logging
+    layer: operations
+    kind: observability
+    level: should
+    title: Structured logging with correlation ids
+    body: Logs are structured JSON and carry a request/correlation id propagated across service calls.
+    tags: [logging, observability, tracing]

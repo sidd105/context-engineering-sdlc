@@ -1,0 +1,48 @@
+defaults:
+  layer: domain
+  kind: term
+  level: info
+
+units:
+  - id: term.payment-provider
+    title: payment provider
+    aliases: [PSP, payment service provider, acquirer, processor]
+    body: An external company that authorizes and captures card or wallet payments on behalf of Monty Python and Co. (e.g. Adyen, Stripe, Worldpay).
+    tags: [payment-provider]
+
+  - id: term.providers
+    title: integrated providers
+    aliases: [Adyen, Stripe, Worldpay, Klarna]
+    body: Payment providers integrated today are Adyen (primary, cards), Stripe (cards, wallets), Worldpay (UK cards), Klarna (in progress, BNPL).
+    tags: [payment-provider, routing]
+    scope: { domains: [payments] }
+
+  - id: term.authorization
+    title: authorization
+    aliases: [auth, authorisation]
+    body: The issuer's approval to reserve funds for a payment. Not yet money movement.
+    tags: [authorization]
+
+  - id: term.capture
+    title: capture
+    body: The instruction to move previously authorized funds. Triggers settlement.
+    tags: [capture]
+
+  - id: term.bin
+    title: BIN
+    aliases: [bank identification number, IIN]
+    body: First 6 to 8 digits of a card number, identifying the issuer. Not cardholder data on its own.
+    tags: [card, routing]
+
+  - id: term.pan
+    title: PAN
+    aliases: [primary account number, card number]
+    body: The full card number. Cardholder data under PCI DSS; never stored or logged outside the vault.
+    tags: [pci, card]
+    relations:
+      seeAlso: [ops.sec.pci-scope]
+
+  - id: term.journal-entry
+    title: journal entry
+    body: A balanced set of ledger postings (debits = credits).
+    tags: [ledger]

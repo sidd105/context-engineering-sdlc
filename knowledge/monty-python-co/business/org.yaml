@@ -1,0 +1,27 @@
+defaults:
+  layer: business
+
+units:
+  - id: biz.policy.data-residency
+    kind: policy
+    level: must
+    title: EU customer data stays in the EU
+    body: |
+      Personal data of EU customers is stored and processed only in EU regions
+      (eu-west-1, eu-central-1). Cross-region replication outside the EU is not
+      allowed.
+    tags: [gdpr, data-residency, privacy, region, pii]
+    owner: legal
+    reviewed: 2024-02-10
+
+  - id: biz.policy.ai-usage
+    kind: policy
+    level: must
+    title: No customer data in third-party AI tools
+    body: |
+      Customer or cardholder data must never be pasted into, or sent to,
+      AI tools that are not on the approved list. Organizational context
+      packages contain no customer data by construction.
+    tags: [ai, privacy, pii]
+    owner: security
+    pinned: true

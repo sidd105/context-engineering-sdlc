@@ -1,0 +1,112 @@
+defaults:
+  layer: domain
+  owner: payments-core
+  scope: { domains: [payments] }
+
+units:
+  - id: dom.payments.payment-aggregate
+    kind: domain-model
+    level: must
+    title: Payment aggregate
+    body: |
+      `Payment` is the aggregate root. It owns `amount` (Money: integer minor
+      units + ISO 4217 currency), `merchantId`, `providerId`, `status`, and a
+      list of `Attempt`s (one per provider call). State changes only through
+      domain methods (`authorize`, `capture`, `void`, `refund`) which emit
+      domain events. Never mutate `status` directly.
+    tags: [payment, aggregate, money, attempt]
+    relations:
+      dependsOn: [dom.payments.transaction-lifecycle, dom.payments.money]
+
+  - id: dom.payments.transaction-lifecycle
+    kind: workflow
+    level: must
+    title: Payment transaction lifecycle
+    body: |
+      CREATED -> AUTHORIZED -> CAPTURED -> (PARTIALLY_)REFUNDED
+      CREATED -> FAILED, AUTHORIZED -> VOIDED, AUTHORIZED -> EXPIRED (after 7 days).
+      Every transition is idempotent on (paymentId, transition, idempotencyKey).
+      Providers' own statuses must be mapped onto this lifecycle in the
+      provider adapter, never leaked into the core.
+    tags: [lifecycle, state-machine, status, authorize, capture, refund, void, transaction]
+
+  - id: dom.payments.provider-abstraction
+    kind: domain-model
+    level: must
+    title: PaymentProvider port
+    body: |
+      Providers are integrated behind the `PaymentProvider` port:
+      `authorize(req)`, `capture(id, amount)`, `void(id)`, `refund(id, amount)`,
+      `parseWebhook(headers, body)`. Each adapter maps provider error codes onto
+      `DeclineReason` (soft/hard decline, fraud, technical). Adapters are
+      stateless; retries and idempotency are handled by the core.
+    tags: [payment-provider, provider, adapter, port, integration, psp]
+    relations:
+      dependsOn: [dom.payments.transaction-lifecycle, dom.payments.decline-reasons, arch.pattern.ports-and-adapters]
+
+  - id: dom.payments.decline-reasons
+    kind: domain-rule
+    level: must
+    title: Decline reasons are normalized
+    body: |
+      Provider decline codes map onto our `DeclineReason` enum. Soft declines
+      (e.g. issuer unavailable) are eligible for retry on another provider;
+      hard declines (e.g. stolen card) must never be retried.
+    tags: [decline, retry, routing, payment-provider, error]
+
+  - id: dom.payments.money
+    kind: domain-rule
+    level: must
+    title: Money is integer minor units
+    summary: Money is integer minor units plus ISO 4217 currency; never floats.
+    body: |
+      Amounts are integers in the currency's minor unit (cents) plus an ISO 4217
+      code. Floating point is forbidden for money. Use `Money.of()`; zero-decimal
+      currencies (JPY) use exponent 0.
+    tags: [money, currency, amount, rounding]
+    scope: { domains: [payments, ledger] }
+
+  - id: dom.payments.idempotency
+    kind: domain-rule
+    level: must
+    title: All payment commands are idempotent
+    body: |
+      Every command carries an `Idempotency-Key`. Replays within 24h return the
+      original result. Provider calls forward a derived idempotency key where the
+      provider supports it.
+    tags: [idempotency, retry, payment, api]
+
+  - id: dom.payments.routing
+    kind: workflow
+    level: should
+    title: Smart routing selects a provider per payment
+    body: |
+      The router ranks enabled providers per payment using card BIN, currency,
+      merchant segment, recent auth rate and cost. On a soft decline it may
+      cascade once to the next provider. New providers start at 0% weight.
+    tags: [routing, payment-provider, cascade, authorization]
+    relations:
+      dependsOn: [dom.payments.decline-reasons]
+      seeAlso: [biz.goal.auth-rate, biz.constraint.cost-per-transaction]
+
+  - id: dom.payments.webhooks
+    kind: workflow
+    level: must
+    title: Provider webhooks are verified and deduplicated
+    body: |
+      Provider webhooks are authenticated (signature/HMAC) before parsing,
+      deduplicated by provider event id, and applied as lifecycle transitions.
+      Out-of-order events are tolerated: a transition that is already behind
+      the current state is ignored.
+    tags: [webhook, payment-provider, signature, hmac, event]
+    relations:
+      dependsOn: [dom.payments.transaction-lifecycle]
+
+  - id: dom.payments.event-payment-captured
+    kind: event
+    level: info
+    title: PaymentCaptured event
+    body: Emitted when capture succeeds. Consumed by ledger-service to post journal entries. Schema in monty-python-co/contracts payments/v3.
+    tags: [event, capture, ledger, kafka]
+    relations:
+      seeAlso: [dom.ledger.double-entry]

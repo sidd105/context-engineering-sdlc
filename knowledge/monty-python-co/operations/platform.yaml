@@ -1,0 +1,116 @@
+defaults:
+  layer: operations
+  owner: platform
+
+units:
+  - id: ops.sec.pci-scope
+    kind: security
+    level: must
+    title: PCI DSS cardholder-data environment boundaries
+    body: |
+      provider-gateway and the card vault are in PCI scope (CDE). Changes to
+      them require a security review ticket, and deploy only through the PCI
+      pipeline. payment-service is out of scope and must only handle tokens,
+      never PANs.
+    tags: [pci, security, compliance, cde, pan, provider-gateway]
+    scope: { domains: [payments] }
+
+  - id: ops.secrets.provider-credentials
+    kind: security
+    level: must
+    title: Provisioning provider credentials
+    body: |
+      Request a Vault path via the `#platform-secrets` workflow:
+      `secret/payments/providers/<provider-id>/{sandbox,prod}`. Prod credentials
+      are entered by Risk, never by engineers. Rotate every 90 days; the
+      rotation job alerts 14 days before expiry.
+    tags: [secrets, vault, credentials, api-key, payment-provider, rotation]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [arch.security.secrets-architecture]
+
+  - id: ops.deploy.pci-pipeline
+    kind: deployment-rule
+    level: must
+    title: PCI pipeline for in-scope services
+    body: |
+      provider-gateway deploys via the `pci-release` pipeline: signed images,
+      two-person approval, change ticket, deploy windows Tuesday to Thursday, 09:00 to 16:00 CET,
+      canary at 5%, then 25%, then 100%, with a 15-minute bake per step.
+    tags: [deploy, pipeline, pci, canary, approval, release]
+    scope: { services: [provider-gateway] }
+    relations:
+      refines: [baseline.ops.progressive-delivery]
+      overrides: [ops.deploy.standard-pipeline]
+
+  - id: ops.deploy.standard-pipeline
+    kind: deployment-rule
+    level: should
+    title: Standard deploy pipeline
+    body: |
+      Services deploy with Argo CD from `main`. Canary at 10%, then 100%, with automated
+      rollback on 5xx rate > 1% or p99 latency +30% versus baseline.
+    tags: [deploy, argo, canary, rollback, pipeline]
+    relations:
+      refines: [baseline.ops.progressive-delivery]
+
+  - id: ops.config.provider-config
+    kind: infrastructure
+    level: should
+    title: Provider configuration and egress
+    body: |
+      Each provider needs: an entry in `deploy/provider-gateway/values-<env>.yaml`
+      (base URL, timeouts, breaker thresholds), its hostnames added to the
+      egress allow-list (`infra/network/egress.tf`), and mTLS certs if the
+      provider requires them.
+    tags: [config, helm, egress, network, payment-provider, terraform]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [arch.principle.provider-egress]
+
+  - id: ops.obs.provider-dashboards
+    kind: observability
+    level: must
+    title: Per-provider metrics and dashboard
+    body: |
+      Adapters emit `provider_requests_total{provider,operation,outcome}`,
+      `provider_latency_seconds` histograms and `provider_decline_total{reason}`.
+      A new provider must appear on the "Provider Health" Grafana dashboard
+      before it receives live traffic.
+    tags: [metrics, prometheus, grafana, dashboard, monitoring, payment-provider, observability]
+    scope: { domains: [payments] }
+
+  - id: ops.alert.provider-alerts
+    kind: slo
+    level: must
+    title: Provider alerting and SLO
+    body: |
+      Each provider has alerts on: auth-rate drop > 5pp vs 7-day baseline
+      (page), error rate > 2% for 5 min (page), p99 latency > 2s (ticket),
+      circuit breaker open (page). Payments SLO: 99.95% of authorization
+      requests receive a definitive answer.
+    tags: [alerting, alert, slo, monitoring, payment-provider, pagerduty]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [ops.obs.provider-dashboards]
+
+  - id: ops.runbook.provider-outage
+    kind: runbook
+    level: should
+    title: "Runbook: payment provider outage"
+    body: |
+      1. Confirm on Provider Health dashboard. 2. Set the provider's routing
+      weight to 0 via the `routing-weights` flag (traffic cascades to others).
+      3. Open an incident and notify the provider's TAM. 4. Do not restart
+      provider-gateway pods; breakers recover automatically.
+    tags: [runbook, outage, incident, payment-provider, routing]
+    scope: { domains: [payments] }
+    relations:
+      dependsOn: [dom.payments.routing]
+
+  - id: ops.infra.kubernetes
+    kind: infrastructure
+    level: info
+    title: Runtime platform
+    body: All services run on EKS in eu-west-1 and eu-central-1; infrastructure is Terraform in monty-python-co/infra.
+    tags: [kubernetes, eks, aws, terraform, region]

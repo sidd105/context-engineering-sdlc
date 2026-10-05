@@ -1,0 +1,36 @@
+defaults:
+  layer: code
+  owner: engineering-excellence
+
+units:
+  - id: code.std.kotlin
+    kind: standard
+    level: should
+    title: Kotlin service conventions
+    body: |
+      Backend services are Kotlin 2 on the JVM 21 with Spring Boot 3. Use
+      `Result`-style sealed classes for expected failures; exceptions only for
+      programmer errors. ktlint enforced in CI.
+    tags: [kotlin, spring, style, errors]
+    scope: { businessUnits: [merchant-services, finance-platform] }
+
+  - id: code.std.logging-pii
+    kind: standard
+    level: must
+    title: Never log cardholder data or secrets
+    body: |
+      Use the `Redacted` wrapper for any field that may contain PAN, CVV,
+      tokens or API keys. The log pipeline rejects lines matching PAN patterns,
+      and CI runs a PAN-detector over test logs.
+    tags: [logging, pci, pan, pii, secrets, security]
+    relations:
+      refines: [baseline.ops.structured-logging]
+
+  - id: code.std.feature-flags
+    kind: practice
+    level: must
+    title: New behaviour ships dark behind a feature flag
+    body: |
+      User-visible or money-moving behaviour ships behind a LaunchDarkly flag
+      that defaults off in production. Flags have an owner and a removal date.
+    tags: [feature-flag, launchdarkly, release, rollout]
