@@ -1,0 +1,11 @@
+export * from "./model/types.js";
+export { validateUnit } from "./model/validate.js";
+export { findKnowledgeBase, listYaml, loadKnowledgeBase, parseManifest, MANIFEST_FILE } from "./loader/loader.js";
+export { compileContext, buildQuery, DEFAULT_OPTIONS } from "./engine/compiler.js";
+export type { CompileOptions, ContextPackage, Candidate, SelectedItem, Exclusion, Signals } from "./engine/compiler.js";
+export { DEFAULT_PROFILES, inferActivity, resolveProfiles } from "./engine/activity.js";
+export { resolveTaskScope, matchScope } from "./engine/scope.js";
+export { packBudget, type Fidelity } from "./engine/budget.js";
+export { searchUnits, type SearchHit } from "./engine/search.js";
+export { findGaps, type Gap } from "./engine/gaps.js";
+export { render, renderMarkdown, renderXml, renderJson, renderExplanation, renderMermaid, type Format } from "./render/render.js";
