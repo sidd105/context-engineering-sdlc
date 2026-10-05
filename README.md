@@ -1,5 +1,7 @@
 # context-engineering-sdlc
 
+[![CI](https://github.com/sidd105/context-engineering-sdlc/actions/workflows/ci.yml/badge.svg)](https://github.com/sidd105/context-engineering-sdlc/actions/workflows/ci.yml)
+
 Compile your organization's knowledge into focused context for a task. Write
 business rules, domain knowledge, architecture decisions, coding conventions
 and runbooks as YAML; the compiler selects relevant material and explains why.
