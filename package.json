@@ -1,0 +1,30 @@
+{
+  "name": "context-engineering-sdlc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A context engine for software teams: describe organizational knowledge in a standard YAML format, compile task-specific context, and serve it to people and AI agents.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "packages/mcp-server"
+  ],
+  "scripts": {
+    "ctx": "node --conditions=source --import tsx packages/cli/src/cli.ts",
+    "mcp": "node --conditions=source --import tsx packages/mcp-server/src/main.ts",
+    "build": "npm run build --workspaces",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.11"
+  }
+}

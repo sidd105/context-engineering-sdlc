@@ -1,0 +1,17 @@
+{
+  "name": "@context-sdlc/cli",
+  "version": "0.1.0",
+  "description": "The ctx command: build, explain and validate organizational context from the terminal.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "ctx": "./bin/ctx.js"
+  },
+  "files": ["bin", "dist", "templates"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@context-sdlc/core": "*"
+  }
+}
