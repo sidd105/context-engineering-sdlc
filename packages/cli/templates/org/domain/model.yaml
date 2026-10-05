@@ -1,0 +1,19 @@
+defaults:
+  layer: domain
+  scope: { domains: [orders] }
+
+units:
+  - id: dom.orders.order-aggregate
+    kind: domain-model
+    level: must
+    title: Order aggregate
+    body: |
+      Describe the aggregate, its invariants, and which operations change it.
+    tags: [order, aggregate]
+
+  - id: term.order
+    kind: term
+    level: info
+    title: order
+    aliases: [purchase]
+    body: What the business means by an order.

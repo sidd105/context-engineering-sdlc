@@ -1,0 +1,27 @@
+# Organization context pack. See docs/schema.md for every field.
+organization: my-org
+description: One line about what the organization does.
+
+# Reuse shared packs (paths relative to this file). Units here with the same id win.
+extends: []
+  # - ../packs/secure-sdlc-baseline
+
+include: [business, domain, architecture, code, operations]
+
+topology:
+  environments: [dev, staging, prod]
+  domains:
+    orders:
+      team: orders-team
+      businessUnit: commerce
+      services:
+        order-service:
+          repo: my-org/order-service
+          aliases: [order service, orders api]
+
+# Optional: tune how much each layer matters per SDLC activity.
+# activities:
+#   implementation:
+#     layerWeights: { operations: 0.5 }
+
+staleAfterDays: 365

@@ -1,0 +1,20 @@
+defaults:
+  layer: business
+  owner: product
+
+units:
+  - id: biz.goal.example
+    kind: goal
+    level: info
+    title: Example goal (replace me)
+    body: A measurable outcome the business is pursuing, and by when.
+    tags: [goal]
+
+  - id: biz.rule.example
+    kind: business-rule
+    level: must
+    title: Example business rule (replace me)
+    body: |
+      State the rule, the reason it exists, and any exceptions.
+    tags: [orders]
+    scope: { domains: [orders] }

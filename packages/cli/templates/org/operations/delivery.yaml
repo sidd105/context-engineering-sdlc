@@ -1,0 +1,10 @@
+defaults:
+  layer: operations
+
+units:
+  - id: ops.deploy.example
+    kind: deployment-rule
+    level: should
+    title: Example deployment rule (replace me)
+    body: How changes reach production, and the gates on the way.
+    tags: [deploy, release]

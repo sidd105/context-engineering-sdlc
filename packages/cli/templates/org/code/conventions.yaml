@@ -1,0 +1,18 @@
+defaults:
+  layer: code
+
+units:
+  - id: code.order-service.layout
+    kind: convention
+    level: should
+    title: order-service repository layout
+    body: Where things live in the repo and how new features are added.
+    tags: [layout, structure]
+    scope: { services: [order-service] }
+
+  - id: code.test.example
+    kind: testing-rule
+    level: must
+    title: Example testing rule (replace me)
+    body: What tests a change needs and where they go.
+    tags: [testing]

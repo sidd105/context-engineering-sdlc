@@ -1,0 +1,10 @@
+defaults:
+  layer: architecture
+
+units:
+  - id: arch.principle.example
+    kind: principle
+    level: should
+    title: Example principle (replace me)
+    body: A principle, why it matters, and how to tell if it's being followed.
+    tags: [architecture]
