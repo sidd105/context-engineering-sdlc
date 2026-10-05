@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "org-context": {
+      "command": "node",
+      "args": [
+        "--conditions=source",
+        "--import",
+        "tsx",
+        "packages/mcp-server/src/main.ts",
+        "--kb",
+        "knowledge/monty-python-co"
+      ]
+    }
+  }
+}
